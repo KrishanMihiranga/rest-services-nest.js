@@ -22,4 +22,26 @@ export class EmployeesService {
         this.employees.push(Employee)
         return Employee;
     }
+
+    updateEmployee(firstName: string, lastName: string, designation: string, nearestCity: string, tier: EmployeeTier) {
+        
+        const updatedEmployee = this.employees.find(employee => employee.firstName === firstName);
+
+        if(updatedEmployee) {
+            updatedEmployee.designation = designation;
+            updatedEmployee.lastName = lastName;
+            updatedEmployee.nearestCity = nearestCity;
+            updatedEmployee.tier = tier;
+            return updatedEmployee;
+        }
+        return this.employees;    
+    }
+
+    deleteEmployee(firstName: string) {
+        const index = this.employees.findIndex(employee => employee.firstName === firstName);
+        if (index !== -1) {
+            this.employees.splice(index, 1);
+        }
+        return this.employees;
+    }
 }
