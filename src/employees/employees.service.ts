@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Employee, EmployeeTier } from './Employee.model';
+import { Employee, EmployeeStatus, EmployeeTier } from './Employee.model';
 import { v1 as uuid } from 'uuid';
+import { EmployeeSearchDto } from './EmployeeSearch.dto';
+import { EmployeeUpdateDto } from './EmployeeUpdate.dto';
 
 @Injectable()
 export class EmployeesService {
@@ -17,31 +19,41 @@ export class EmployeesService {
             lastName,
             designation,
             nearestCity,
-            tier
+            tier,
+            status: EmployeeStatus.ACTIVE
         }
         this.employees.push(Employee)
         return Employee;
     }
 
-    updateEmployee(firstName: string, lastName: string, designation: string, nearestCity: string, tier: EmployeeTier) {
-        
-        const updatedEmployee = this.employees.find(employee => employee.firstName === firstName);
+    employeeSearch(employeeSearchDto: EmployeeSearchDto) {
+        const { status, name } = employeeSearchDto;
+        let employees = this.getAllEmployees();
 
-        if(updatedEmployee) {
-            updatedEmployee.designation = designation;
-            updatedEmployee.lastName = lastName;
-            updatedEmployee.nearestCity = nearestCity;
-            updatedEmployee.tier = tier;
-            return updatedEmployee;
+        if (status) {
+            employees = employees.filter(employee => employee.status === status);
         }
-        return this.employees;    
+        if (name) {
+            employees = employees.filter(employee => employee.firstName.includes(name) || employee.lastName.includes(name));
+        }
+        return employees;
     }
 
-    deleteEmployee(firstName: string) {
-        const index = this.employees.findIndex(employee => employee.firstName === firstName);
-        if (index !== -1) {
-            this.employees.splice(index, 1);
-        }
-        return this.employees;
+    getEmployeeById(id: string): Employee | undefined {
+        const employees = this.getAllEmployees();
+        return employees.find(employee => employee.id === id);
+    }
+
+    updateEmployee(employeeUpdateDto: EmployeeUpdateDto): Employee | undefined {
+        const { id, city } = employeeUpdateDto;
+        let employee = this.getEmployeeById(id)!;
+        employee.nearestCity = city;
+        return employee;
+    }
+
+    deleteEmployee(id: string):boolean {
+        let employees = this.getAllEmployees();
+        this.employees = employees.filter(employee => employee.id!== id);
+        return (employees.length != this.employees.length)
     }
 }
